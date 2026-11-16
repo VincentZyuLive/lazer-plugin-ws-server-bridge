@@ -13,6 +13,14 @@
 
 ---
 
+## 📸 运行效果 (Preview)
+
+配合 OBS 原生浏览器源挂载 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyu233/splayer-status-html-overlay-for-obs) 挂件，实机联动效果如下（支持毫秒级 Seek 纠偏、中文翻译与罗马音音译渲染）：
+
+![OBS 网页挂件毫秒级 Seek 同步与多层歌词渲染效果](docs/images/preview/preview.lazer-html-overlay-obs-sync.png)
+
+---
+
 ## 🎯 功能特性
 
 - **SPlayer-Next 外部 API 协议兼容**：
