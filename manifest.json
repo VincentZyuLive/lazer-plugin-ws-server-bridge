@@ -1,0 +1,18 @@
+{
+  "id": "splayer-next-compatible-ws-server-bridge",
+  "name": "用于Lua 的 splayer-next 兼容协议格式的 ws服务端桥接lua插件",
+  "version": "0.1.0",
+  "description": "为 OBS 挂件与外部工具提供兼容 SPlayer-Next 格式的 WebSocket 广播与控制服务 (ws://127.0.0.1:14558/ws)。",
+  "author": "VincentZyu",
+  "entry": "main.lua",
+  "apiVersion": 1,
+  "provider": "splayer_ws",
+  "capabilities": [],
+  "permissions": {
+    "websocketServer": [
+      "127.0.0.1:14558",
+      "localhost:14558"
+    ],
+    "storage": true
+  }
+}
