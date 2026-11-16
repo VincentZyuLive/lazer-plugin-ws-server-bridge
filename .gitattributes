@@ -1,0 +1,3 @@
+# GitHub Linguist Overrides
+# 将 README.md 单独计入仓库语言统计
+README.md linguist-detectable=true linguist-documentation=false
