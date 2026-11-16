@@ -29,6 +29,15 @@
 
 ---
 
+## 📑 协议规范与官方实现源头
+
+本插件的数据封包格式与交互指令严格对标 [SPlayer-Dev/SPlayer-Next](https://github.com/SPlayer-Dev/SPlayer-Next) 官方实现源头：
+
+* **双向通道与上行控制指令定义**：[`electron/main/server/ws.ts#L1-L11`](https://github.com/SPlayer-Dev/SPlayer-Next/blob/9d3ca78f107b7cbe28b1ef7ce9041de9bad55531/electron/main/server/ws.ts#L1-L11)
+* **下行事件广播封包格式**：[`electron/main/server/broadcast.ts#L32-L45`](https://github.com/SPlayer-Dev/SPlayer-Next/blob/9d3ca78f107b7cbe28b1ef7ce9041de9bad55531/electron/main/server/broadcast.ts#L32-L45)
+
+---
+
 ## 🚀 安装与使用
 
 ### 1. 自动安装（推荐）
