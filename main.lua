@@ -48,7 +48,7 @@ local function format_track_payload(raw)
 
   local artist_str = raw.artist or (#artists > 0 and table.concat(artists, ", ") or "")
   local title_str = raw.title or raw.name or ""
-  local cover_str = raw.coverUrl or raw.picUrl or raw.artwork or ""
+  local cover_str = raw.cover or raw.coverOriginal or raw.coverUrl or raw.picUrl or raw.artwork or ""
 
   return {
     id = tostring(raw.id or ""),
@@ -57,6 +57,8 @@ local function format_track_payload(raw)
     artist = artist_str,
     artists = artists,
     album = raw.album or raw.albumName or "",
+    cover = cover_str,
+    coverOriginal = cover_str,
     coverUrl = cover_str,
     picUrl = cover_str,
     duration = math.floor(tonumber(raw.duration or raw.durationMs or 0) or 0),
