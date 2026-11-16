@@ -1,8 +1,14 @@
 --[[
-  splayer-next-compatible-ws-server-bridge
-  用于Lua 的 splayer-next 兼容协议格式的 ws服务端桥接lua插件
+  lazer-plugin-ws-server-bridge (lazer.ws.bridge)
+  专为 Lazer 打造的外部 WebSocket 服务端状态广播与双向控制桥接插件
 
-  对标 SPlayer-Next 外部 API 规范：
+  对标 SPlayer-Next 外部 API 规范与官方实现源头：
+  - 双向通道与控制指令规范 (ws.ts)：
+    https://github.com/SPlayer-Dev/SPlayer-Next/blob/9d3ca78f107b7cbe28b1ef7ce9041de9bad55531/electron/main/server/ws.ts#L1-L11
+  - 广播事件数据封包格式 (broadcast.ts)：
+    https://github.com/SPlayer-Dev/SPlayer-Next/blob/9d3ca78f107b7cbe28b1ef7ce9041de9bad55531/electron/main/server/broadcast.ts#L32-L45
+
+  数据与服务契约：
   - 默认监听端口：14558
   - WebSocket 服务端端点：ws://127.0.0.1:14558/ws
   - 下行广播格式：{ "kind": "event", "type": "track"|"lyric"|"status", "data": ... }
