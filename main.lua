@@ -218,6 +218,14 @@ function plugin.call(operation, args)
       local formatted = format_track_payload(event_data)
       state.current_track = formatted
       broadcast("event", "track", formatted or {})
+
+      -- 切歌时立即重置当前歌词并广播空歌词清屏，防止下游挂件残留上一首的歌词
+      state.current_lyric = {
+        source = { format = "lrc", source = "online" },
+        lyric = {},
+        pureMusic = false,
+      }
+      broadcast("event", "lyric", state.current_lyric)
       return true
     elseif event_type == "lyric" then
       local payload = format_lyric_payload(event_data)
