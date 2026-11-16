@@ -71,6 +71,71 @@ local function format_track_payload(raw)
   }
 end
 
+--- 格式化 SPlayer-Next 规范的歌词行 payload
+local function format_lyric_payload(raw)
+  if not raw or type(raw) ~= "table" then
+    return { lyric = {} }
+  end
+
+  local raw_lines = raw.lines or raw.lyric or raw
+  if type(raw_lines) ~= "table" then
+    return { lyric = {} }
+  end
+
+  local formatted_lines = {}
+  local count = #raw_lines
+  for i = 1, count do
+    local line = raw_lines[i]
+    if type(line) == "table" then
+      local start_time = math.floor(tonumber(line.startTime or line.time or 0) or 0)
+      local end_time = tonumber(line.endTime or 0)
+      if not end_time or end_time <= start_time then
+        local next_line = raw_lines[i + 1]
+        if type(next_line) == "table" then
+          local next_start = tonumber(next_line.startTime or next_line.time)
+          if next_start and next_start > start_time then
+            end_time = math.floor(next_start)
+          else
+            end_time = start_time + 4000
+          end
+        else
+          end_time = start_time + 4000
+        end
+      else
+        end_time = math.floor(end_time)
+      end
+
+      local text_str = tostring(line.text or line.content or "")
+      local trans_str = tostring(line.translatedLyric or line.tlyric or line.translation or "")
+      local roman_str = tostring(line.romanLyric or line.rlyric or line.romanization or line.romaji or "")
+
+      local item = {
+        startTime = start_time,
+        endTime = end_time,
+        text = text_str,
+      }
+      if trans_str ~= "" then
+        item.translatedLyric = trans_str
+      end
+      if roman_str ~= "" then
+        item.romanLyric = roman_str
+      end
+
+      if type(line.words) == "table" then
+        item.words = line.words
+      end
+
+      table.insert(formatted_lines, item)
+    end
+  end
+
+  return {
+    source = raw.source or { format = "lrc", source = "online" },
+    lyric = formatted_lines,
+    pureMusic = raw.pureMusic or false,
+  }
+end
+
 --- 广播消息给所有连接的客户端
 local function broadcast(kind, event_type, data)
   if not state.listening then
@@ -155,11 +220,8 @@ function plugin.call(operation, args)
       broadcast("event", "track", formatted or {})
       return true
     elseif event_type == "lyric" then
-      state.current_lyric = event_data
-      -- 包装为 SPlayer-Next 的挂件格式 { lyric = [ ... ] }
-      local payload = {
-        lyric = event_data.lines or event_data.lyric or event_data,
-      }
+      local payload = format_lyric_payload(event_data)
+      state.current_lyric = payload
       broadcast("event", "lyric", payload)
       return true
     elseif event_type == "status" then
