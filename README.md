@@ -3,19 +3,19 @@
 [![Release](https://img.shields.io/github/v/release/VincentZyuLive/lazer-plugin-ws-server-bridge?style=flat-square)](https://github.com/VincentZyuLive/lazer-plugin-ws-server-bridge/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-专为 **Lazer** 打造的外部 WebSocket 状态广播与双向控制插件，原生兼容 **SPlayer-Next** 的外部 API 规范。
+专为 [**Lazer**](https://github.com/VincentZyu233/Lazer) 打造的外部 WebSocket 状态广播与双向控制插件，原生兼容 [**SPlayer-Next**](https://github.com/SPlayer-Dev/SPlayer-Next) 的外部 API 规范。
 
 ---
 
 > ### 💡 核心特性与 OBS 零侵入对接说明
-> * **OBS 端无需安装任何额外插件**：OBS 维持原有使用习惯，使用原生“浏览器源 (Browser Source)”直接打开 HTML 挂件（例如 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyu233/splayer-status-html-overlay-for-obs) 的 `index.html`）即可。
+> * **OBS 端无需安装任何额外插件**：OBS 维持原有使用习惯，使用原生“浏览器源 (Browser Source)”直接打开 HTML 挂件（例如 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyuLive/splayer-status-html-overlay-for-obs) 的 `index.html`）即可。
 > * **全面兼容 SPlayer-Next 外部 API 规范**：本插件在 Lazer 本地建立 `ws://127.0.0.1:14558/ws` 广播端点，实时向 OBS 挂件推送当前歌曲、歌手、专辑、封面直链、毫秒进度条及逐行滚动歌词，并支持反向切歌与音量控制。
 
 ---
 
 ## 📸 运行效果 (Preview)
 
-配合 OBS 原生浏览器源挂载 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyu233/splayer-status-html-overlay-for-obs) 挂件，实机联动效果如下（支持毫秒级 Seek 纠偏、中文翻译与罗马音音译渲染）：
+配合 OBS 原生浏览器源挂载 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyuLive/splayer-status-html-overlay-for-obs) 挂件，实机联动效果如下（支持毫秒级 Seek 纠偏、中文翻译与罗马音音译渲染）：
 
 ![OBS 网页挂件毫秒级 Seek 同步与多层歌词渲染效果](docs/images/preview/preview.lazer-html-overlay-obs-sync.png)
 
@@ -33,7 +33,7 @@
 - **双向控制支持**：
   - 支持外部工具通过 `control` 指令对 Lazer 进行播放、暂停、切歌、跳转进度和调整音量。
 - **与 OBS 挂件完美适配**：
-  - 开箱即用支持 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyu233/splayer-status-html-overlay-for-obs)。
+  - 开箱即用支持 [`splayer-status-html-overlay-for-obs`](https://github.com/VincentZyuLive/splayer-status-html-overlay-for-obs)。
 
 ---
 
