@@ -3,7 +3,7 @@
 [![Release](https://img.shields.io/github/v/release/VincentZyuLive/lazer-plugin-ws-server-bridge?style=flat-square)](https://github.com/VincentZyuLive/lazer-plugin-ws-server-bridge/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-专为 [**Lazer**](https://github.com/VincentZyu233/Lazer) 打造的外部 WebSocket 状态广播与双向控制插件，原生兼容 [**SPlayer-Next**](https://github.com/SPlayer-Dev/SPlayer-Next) 的外部 API 规范。
+专为 [**Lazer**](https://github.com/chuxuehaocai/Lazer) 打造的外部 WebSocket 状态广播与双向控制插件，原生兼容 [**SPlayer-Next**](https://github.com/SPlayer-Dev/SPlayer-Next) 的外部 API 规范。
 
 ---
 
