@@ -7,7 +7,9 @@
   "entry": "main.lua",
   "apiVersion": 1,
   "provider": "ws_bridge",
-  "capabilities": [],
+  "capabilities": [
+    "player_events"
+  ],
   "permissions": {
     "websocketServer": [
       "127.0.0.1:14558",

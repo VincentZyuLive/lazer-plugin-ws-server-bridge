@@ -21,10 +21,14 @@ local SERVER_ID = "splayer_next_ws_server"
 local DEFAULT_PORT = 14558
 local WS_PATH = "/ws"
 
--- 内部缓存当前播放状态，供新连入挂件即时同步
+-- 内部缓存当前播放状态与行为配置，供新连入挂件即时同步
 local state = {
   listening = false,
   port = DEFAULT_PORT,
+  enabled = true,
+  broadcast_track = true,
+  broadcast_lyric = true,
+  broadcast_status = false, -- 默认关闭每秒高频心跳，避免不必要的轮询唤醒；切歌与歌词依然即时推送
   current_track = nil,
   current_lyric = nil,
   current_status = {
@@ -206,6 +210,10 @@ function plugin.call(operation, args)
 
   -- 1. 播放器事件下行通知 (来自 Lazer 宿主)
   if operation == "player_event" then
+    if not state.enabled then
+      return false
+    end
+
     -- 首次收到事件时，若未启动服务则自动尝试拉起
     if not state.listening then
       start_server()
@@ -217,7 +225,6 @@ function plugin.call(operation, args)
     if event_type == "track" then
       local formatted = format_track_payload(event_data)
       state.current_track = formatted
-      broadcast("event", "track", formatted or {})
 
       -- 切歌时立即重置当前歌词并广播空歌词清屏，防止下游挂件残留上一首的歌词
       state.current_lyric = {
@@ -225,12 +232,20 @@ function plugin.call(operation, args)
         lyric = {},
         pureMusic = false,
       }
-      broadcast("event", "lyric", state.current_lyric)
+
+      if state.broadcast_track then
+        broadcast("event", "track", formatted or {})
+      end
+      if state.broadcast_lyric then
+        broadcast("event", "lyric", state.current_lyric)
+      end
       return true
     elseif event_type == "lyric" then
       local payload = format_lyric_payload(event_data)
       state.current_lyric = payload
-      broadcast("event", "lyric", payload)
+      if state.broadcast_lyric then
+        broadcast("event", "lyric", payload)
+      end
       return true
     elseif event_type == "status" then
       state.current_status.state = event_data.state or state.current_status.state
@@ -239,14 +254,57 @@ function plugin.call(operation, args)
       if event_data.volume ~= nil then
         state.current_status.volume = tonumber(event_data.volume)
       end
-      broadcast("event", "status", state.current_status)
+      if state.broadcast_status then
+        broadcast("event", "status", state.current_status)
+      end
       return true
     end
 
     return false
   end
 
-  -- 2. 接收外部控制指令（Lua -> Dart）
+  -- 2. 响应宿主设置变更（host.add_setting）
+  if operation == "setting_changed" then
+    local id = args.id
+    local val = args.value
+    if id == "splayer_ws_enabled" then
+      state.enabled = (val == true)
+      if state.enabled then
+        start_server()
+      else
+        stop_server()
+      end
+    elseif id == "splayer_ws_broadcast_track" then
+      state.broadcast_track = (val == true)
+    elseif id == "splayer_ws_broadcast_lyric" then
+      state.broadcast_lyric = (val == true)
+    elseif id == "splayer_ws_broadcast_status" then
+      state.broadcast_status = (val == true)
+    end
+    return true
+  end
+
+  -- 3. 响应插件页面控件交互（host.add_page 按钮点击等）
+  if operation == "page_event" then
+    if args.id == "restart_service" then
+      stop_server()
+      start_server()
+      return true
+    end
+    return true
+  end
+
+  -- 4. 响应播放器菜单快捷点击
+  if operation == "player_menu" then
+    if args.id == "splayer_ws_restart" then
+      stop_server()
+      start_server()
+      return true
+    end
+    return true
+  end
+
+  -- 5. 接收外部控制指令（Lua -> Dart）
   if operation == "control" then
     local ok, res = pcall(function()
       return host.player_control(args)
@@ -254,7 +312,7 @@ function plugin.call(operation, args)
     return ok and res or false
   end
 
-  -- 3. 服务端管理与手动拉起接口
+  -- 6. 服务端管理与手动拉起接口
   if operation == "start" then
     return start_server()
   end
@@ -269,6 +327,10 @@ function plugin.call(operation, args)
       port = state.port,
       path = WS_PATH,
       url = string.format("ws://127.0.0.1:%d%s", state.port, WS_PATH),
+      enabled = state.enabled,
+      broadcast_track = state.broadcast_track,
+      broadcast_lyric = state.broadcast_lyric,
+      broadcast_status = state.broadcast_status,
       track = state.current_track,
       playback = state.current_status,
     }
@@ -277,16 +339,66 @@ function plugin.call(operation, args)
   return nil
 end
 
--- 模块加载时尝试注册并拉起服务
+-- 模块加载时尝试注册设置、页面与快捷项
 pcall(function()
-  -- 注册设置项
+  -- 注册精细化设置开关 (Lazer 宿主原生 UI 渲染)
   if host.add_setting then
     host.add_setting({
       id = "splayer_ws_enabled",
-      name = "启用 OBS / SPlayer WebSocket 广播",
-      description = "在 ws://127.0.0.1:14558/ws 实时广播播放状态与歌词",
-      type = "boolean",
+      title = "启用 OBS / SPlayer WebSocket 广播服务",
+      subtitle = "在 ws://127.0.0.1:14558/ws 本地端口监听连接并接收外部控制",
+      type = "toggle",
       default = true,
+    })
+    host.add_setting({
+      id = "splayer_ws_broadcast_track",
+      title = "广播切歌数据 (Track)",
+      subtitle = "切歌时向 OBS / 外部挂件推送歌曲标题、歌手与专辑封面",
+      type = "toggle",
+      default = true,
+    })
+    host.add_setting({
+      id = "splayer_ws_broadcast_lyric",
+      title = "广播歌词数据 (Lyric)",
+      subtitle = "歌曲包含歌词时向外部挂件推送逐行与翻译歌词",
+      type = "toggle",
+      default = true,
+    })
+    host.add_setting({
+      id = "splayer_ws_broadcast_status",
+      title = "广播高频播放进度心跳 (Status)",
+      subtitle = "每秒向挂件推送播放进度与音量（若仅需歌词与曲名，建议关闭以节省能耗）",
+      type = "toggle",
+      default = false,
+    })
+  end
+
+  -- 注册原生插件声明与展示面板 (host.add_page)
+  if host.add_page then
+    host.add_page({
+      id = "ws_bridge_panel",
+      title = "OBS / SPlayer 外部桥接面板",
+      subtitle = "本地服务状态监控、接入指引与隐私声明",
+      icon = "sensors",
+      elements = {
+        { type = "section", title = "使用声明与公告" },
+        {
+          type = "text",
+          text = "本插件仅在本地环回地址 (127.0.0.1:14558) 开启 WebSocket 服务，专供本机 OBS 浏览器源或第三方悬浮歌词挂件读取播放信息，绝不会向任何公网服务器上传您的播放历史或账号凭据。\n\n如需降低后台负载与电量消耗，可在插件设置中关闭「高频播放进度心跳」，挂件仍可正常接收切歌与歌词推送。",
+        },
+        { type = "divider" },
+        { type = "section", title = "OBS 挂件连接信息" },
+        {
+          type = "text",
+          text = "• 服务端连接地址：ws://127.0.0.1:14558/ws\n• 协议规范：兼容 SPlayer-Next 外部 API 规范\n• 双向控制：支持外部挂件发送播放、暂停、切歌、音量调节",
+        },
+        {
+          type = "button",
+          id = "restart_service",
+          title = "重启本地 WebSocket 服务",
+          icon = "refresh",
+        },
+      },
     })
   end
 
@@ -294,8 +406,8 @@ pcall(function()
   if host.add_player_menu_item then
     host.add_player_menu_item({
       id = "splayer_ws_restart",
-      title = "重启 OBS 广播服务 (ws://127.0.0.1:14558/ws)",
-      command = "restart_ws",
+      label = "重启 OBS 广播服务 (14558 端口)",
+      icon = "refresh",
     })
   end
 
