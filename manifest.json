@@ -2,7 +2,7 @@
   "id": "lazer.ws.bridge",
   "name": "WebSocket 外部服务端桥接 (兼容 SPlayer-Next 协议)",
   "version": "0.2.0",
-  "description": "专为 OBS 网页挂件与外部工具打造的 WebSocket 广播与控制服务，原生兼容 SPlayer-Next 外部 API 规范，支持播放状态时序广播与跨应用双向控制。",
+  "description": "专为 OBS 网页挂件、桌面小组件与外部工具打造的 WebSocket 扩展服务，原生兼容 SPlayer-Next 协议，支持播放时序数据广播与跨应用双向控制。",
   "author": "VincentZyuLive",
   "entry": "main.lua",
   "apiVersion": 1,
